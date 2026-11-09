@@ -70,4 +70,103 @@
             <input type="text" id="org_en" value="Bellvitge University Hospital">
         </div>
 
-        <h2>
+        <h2>4. Observacions / Horaris (Trilingüe)</h2>
+        <label>Text lliure en Català (horaris, ubicació, telèfon alternatiu...)</label>
+        <textarea id="obs_ca" placeholder="Ex. Horari d'atenció: Dilluns a Divendres de 8h a 15h."></textarea>
+        
+        <label>Traducció d'Observacions (ES / EN)</label>
+        <div class="grid-3">
+            <input type="text" id="obs_es" placeholder="Observacions ES">
+            <input type="text" id="obs_en" placeholder="Notes EN">
+        </div>
+
+        <button onclick="generarQR()">Generar Codi QR</button>
+    </div>
+
+    <div class="qr-preview">
+        <h3>Vista Prèvia del QR</h3>
+        <div id="qrcode"></div>
+        <button id="btnDownload" style="display:none; background:#2ecc71;" onclick="descargarQR()">Descarregar Imatge QR</button>
+    </div>
+</div>
+
+<script>
+    async function traducirTexto(texto, targetLang) {
+        if (!texto || texto.trim() === '') return '';
+        try {
+            const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(texto)}&langpair=ca|${targetLang}`);
+            const json = await res.json();
+            return json.responseData.translatedText || texto;
+        } catch (e) {
+            return texto;
+        }
+    }
+
+    async function traducirTodo() {
+        const cargoCat = document.getElementById('cargo_ca').value;
+        const obsCat = document.getElementById('obs_ca').value;
+
+        if (!cargoCat && !obsCat) {
+            alert('Introdueix primer el càrrec o les observacions en català.');
+            return;
+        }
+        
+        if (cargoCat) {
+            document.getElementById('cargo_es').value = "Traduint...";
+            document.getElementById('cargo_en').value = "Traduint...";
+            document.getElementById('cargo_es').value = await traducirTexto(cargoCat, 'es');
+            document.getElementById('cargo_en').value = await traducirTexto(cargoCat, 'en');
+        }
+
+        if (obsCat) {
+            document.getElementById('obs_es').value = "Traduint...";
+            document.getElementById('obs_en').value = "Traduint...";
+            document.getElementById('obs_es').value = await traducirTexto(obsCat, 'es');
+            document.getElementById('obs_en').value = await traducirTexto(obsCat, 'en');
+        }
+    }
+
+    function generarQR() {
+        const base = document.getElementById('baseUrl').value.trim();
+        const n = document.getElementById('nombre').value;
+        const t = document.getElementById('telefono').value;
+        const e = document.getElementById('email').value;
+        const img = document.getElementById('imgUrl').value.trim();
+
+        const c_ca = document.getElementById('cargo_ca').value;
+        const c_es = document.getElementById('cargo_es').value;
+        const c_en = document.getElementById('cargo_en').value;
+
+        const o_ca = document.getElementById('org_ca').value;
+        const o_es = document.getElementById('org_es').value;
+        const o_en = document.getElementById('org_en').value;
+
+        const obs_ca = document.getElementById('obs_ca').value;
+        const obs_es = document.getElementById('obs_es').value;
+        const obs_en = document.getElementById('obs_en').value;
+
+        const finalUrl = `${base}?n=${encodeURIComponent(n)}&t=${encodeURIComponent(t)}&e=${encodeURIComponent(e)}&img=${encodeURIComponent(img)}&c_ca=${encodeURIComponent(c_ca)}&c_es=${encodeURIComponent(c_es)}&c_en=${encodeURIComponent(c_en)}&o_ca=${encodeURIComponent(o_ca)}&o_es=${encodeURIComponent(o_es)}&o_en=${encodeURIComponent(o_en)}&obs_ca=${encodeURIComponent(obs_ca)}&obs_es=${encodeURIComponent(obs_es)}&obs_en=${encodeURIComponent(obs_en)}`;
+
+        const qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = '';
+
+        new QRCode(qrContainer, {
+            text: finalUrl,
+            width: 350,
+            height: 350,
+            correctLevel : QRCode.CorrectLevel.L
+        });
+
+        document.getElementById('btnDownload').style.display = 'block';
+    }
+
+    function descargarQR() {
+        const img = document.querySelector('#qrcode img') || document.querySelector('#qrcode canvas');
+        const enlace = document.createElement('a');
+        enlace.href = img.src || img.toDataURL("image/png");
+        enlace.download = `QR_${document.getElementById('nombre').value.replace(/\s+/g, '_')}.png`;
+        enlace.click();
+    }
+</script>
+</body>
+</html>
