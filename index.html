@@ -7,31 +7,34 @@
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .card { background: white; max-width: 400px; width: 100%; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 24px; box-sizing: border-box; text-align: center; }
-        .avatar { width: 80px; height: 80px; background: #0056b3; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; margin: 0 auto 16px; }
+        .avatar { width: 90px; height: 90px; background: #0056b3; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: bold; margin: 0 auto 16px; overflow: hidden; border: 3px solid #e9ecef; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
         h1 { font-size: 1.4rem; color: #1a1a1a; margin: 0 0 6px; }
-        .title { font-size: 1rem; color: #0056b3; font-weight: 600; margin: 0 0 4px; }
-        .org { font-size: 0.9rem; color: #666; margin: 0 0 20px; }
-        .lang-picker { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; background: #e9ecef; padding: 4px; border-radius: 8px; }
+        .title { font-size: 1rem; color: #0056b3; font-weight: 600; margin: 0 0 4px; min-height: 1.2em; }
+        .org { font-size: 0.9rem; color: #666; margin: 0 0 20px; min-height: 1.1em; }
+        .lang-picker { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; background: #e9ecef; padding: 4px; border-radius: 8px; }
         .lang-btn { flex: 1; border: none; background: transparent; padding: 8px; font-weight: bold; font-size: 0.85rem; border-radius: 6px; cursor: pointer; color: #495057; }
         .lang-btn.active { background: white; color: #0056b3; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .info-group { text-align: left; background: #f8f9fa; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; }
         .info-label { font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: bold; letter-spacing: 0.5px; }
-        .info-value { font-size: 0.95rem; color: #333; margin-top: 2px; text-decoration: none; display: block; word-break: break-all; }
+        .info-value { font-size: 0.95rem; color: #333; margin-top: 2px; text-decoration: none; display: block; word-break: break-all; white-space: pre-line; }
         .btn-vcard { display: block; width: 100%; background: #28a745; color: white; text-decoration: none; padding: 14px; border-radius: 8px; font-weight: bold; margin-top: 20px; box-sizing: border-box; border: none; font-size: 1rem; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div class="avatar" id="avatar">--</div>
+    <div class="avatar" id="avatarContainer">
+        <span id="avatarText">--</span>
+    </div>
     <h1 id="name">Cargando...</h1>
     <div class="title" id="jobTitle"></div>
     <div class="org" id="orgName"></div>
 
     <div class="lang-picker">
-        <button class="lang-btn active" onclick="setLang('ca')">CAT</button>
-        <button class="lang-btn" onclick="setLang('es')">ES</button>
-        <button class="lang-btn" onclick="setLang('en')">EN</button>
+        <button class="lang-btn active" id="btn-ca" onclick="setLang('ca')">CAT</button>
+        <button class="lang-btn" id="btn-es" onclick="setLang('es')">ES</button>
+        <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
     </div>
 
     <div class="info-group">
@@ -41,6 +44,10 @@
     <div class="info-group">
         <div class="info-label" id="lblEmail">Correu electrònic</div>
         <a href="" id="linkEmail" class="info-value"></a>
+    </div>
+    <div class="info-group" id="groupObs" style="display:none;">
+        <div class="info-label" id="lblObs">Observacions</div>
+        <div id="valObs" class="info-value"></div>
     </div>
 
     <button class="btn-vcard" onclick="downloadVCard()" id="btnSave">Desar contacte</button>
@@ -52,23 +59,31 @@
         n: params.get('n') || 'Nom Cognoms',
         t: params.get('t') || '',
         e: params.get('e') || '',
+        img: params.get('img') || '',
         c_ca: params.get('c_ca') || '', c_es: params.get('c_es') || '', c_en: params.get('c_en') || '',
-        o_ca: params.get('o_ca') || '', o_es: params.get('o_es') || '', o_en: params.get('o_en') || ''
+        o_ca: params.get('o_ca') || '', o_es: params.get('o_es') || '', o_en: params.get('o_en') || '',
+        obs_ca: params.get('obs_ca') || '', obs_es: params.get('obs_es') || '', obs_en: params.get('obs_en') || ''
     };
 
     let currentLang = 'ca';
 
     const uiTexts = {
-        ca: { tel: 'Telèfon', email: 'Correu electrònic', save: 'Desar contacte' },
-        es: { tel: 'Teléfono', email: 'Correo electrónico', save: 'Guardar contacto' },
-        en: { tel: 'Phone', email: 'Email', save: 'Save Contact' }
+        ca: { tel: 'Telèfon', email: 'Correu electrònic', obs: 'Observacions', save: 'Desar contacte' },
+        es: { tel: 'Teléfono', email: 'Correo electrónico', obs: 'Observaciones', save: 'Guardar contacto' },
+        en: { tel: 'Phone', email: 'Email', obs: 'Notes / Info', save: 'Save Contact' }
     };
 
     function init() {
         document.getElementById('name').textContent = data.n;
-        const initials = data.n.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
-        document.getElementById('avatar').textContent = initials || 'HUB';
         
+        const container = document.getElementById('avatarContainer');
+        if (data.img && data.img.trim() !== '') {
+            container.innerHTML = `<img src="${data.img}" alt="${data.n}">`;
+        } else {
+            const initials = data.n.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
+            container.innerHTML = `<span id="avatarText">${initials || 'HUB'}</span>`;
+        }
+
         document.getElementById('linkTel').textContent = data.t;
         document.getElementById('linkTel').href = 'tel:' + data.t;
         document.getElementById('linkEmail').textContent = data.e;
@@ -79,20 +94,39 @@
 
     function setLang(lang) {
         currentLang = lang;
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.textContent.toLowerCase() === lang || (lang==='ca' && btn.textContent==='CAT'));
+        ['ca', 'es', 'en'].forEach(l => {
+            document.getElementById('btn-' + l).classList.toggle('active', l === lang);
         });
 
         document.getElementById('jobTitle').textContent = data['c_' + lang] || data.c_ca;
         document.getElementById('orgName').textContent = data['o_' + lang] || data.o_ca;
         
+        const obsText = data['obs_' + lang] || data.obs_ca;
+        const groupObs = document.getElementById('groupObs');
+        if (obsText && obsText.trim() !== '') {
+            groupObs.style.display = 'block';
+            document.getElementById('valObs').textContent = obsText;
+        } else {
+            groupObs.style.display = 'none';
+        }
+
         document.getElementById('lblTel').textContent = uiTexts[lang].tel;
         document.getElementById('lblEmail').textContent = uiTexts[lang].email;
+        document.getElementById('lblObs').textContent = uiTexts[lang].obs;
         document.getElementById('btnSave').textContent = uiTexts[lang].save;
     }
 
     function downloadVCard() {
-        const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${data.n}\nORG:${data['o_' + currentLang] || data.o_ca}\nTITLE:${data['c_' + currentLang] || data.c_ca}\nTEL;TYPE=WORK,VOICE:${data.t}\nEMAIL;TYPE=WORK,INTERNET:${data.e}\nEND:VCARD`;
+        const currentTitle = data['c_' + currentLang] || data.c_ca;
+        const currentOrg = data['o_' + currentLang] || data.o_ca;
+        const currentObs = data['obs_' + currentLang] || data.obs_ca;
+
+        let vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${data.n}\nORG:${currentOrg}\nTITLE:${currentTitle}\nTEL;TYPE=WORK,VOICE:${data.t}\nEMAIL;TYPE=WORK,INTERNET:${data.e}`;
+        if (currentObs) {
+            vcard += `\nNOTE:${currentObs.replace(/\n/g, ' ')}`;
+        }
+        vcard += `\nEND:VCARD`;
+
         const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
