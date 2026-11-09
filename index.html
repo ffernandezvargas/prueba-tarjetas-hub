@@ -2,171 +2,140 @@
 <html lang="ca">
 <head>
     <meta charset="UTF-8">
-    <title>Generador Administratiu de Targetes QR</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Targeta de Visita Digital</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #1a252f; color: #333; padding: 20px; display: flex; justify-content: center; }
-        .box { background: white; padding: 25px; border-radius: 10px; max-width: 850px; width: 100%; display: flex; gap: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-        .form { flex: 1.3; }
-        .qr-preview { flex: 0.7; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        h2 { font-size: 1rem; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 4px; margin-top: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
-        h2:first-of-type { margin-top: 0; }
-        label { font-weight: bold; font-size: 0.8rem; display: block; margin-top: 8px; color: #555; }
-        input, textarea { width: 100%; padding: 8px; margin-top: 3px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: inherit; font-size: 0.9rem; }
-        textarea { resize: vertical; height: 50px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        button { background: #3498db; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 12px; font-size: 0.95rem; }
-        button:hover { background: #2980b9; }
-        button.translate { background: #f39c12; margin-top: 6px; padding: 6px 10px; font-size: 0.85rem; }
-        button.translate:hover { background: #d35400; }
-        #qrcode { margin: 15px 0; background: white; padding: 10px; border-radius: 4px; border: 1px solid #eee; }
-        .hint { font-size: 0.75rem; color: #777; margin-top: 2px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .card { background: white; max-width: 400px; width: 100%; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 24px; box-sizing: border-box; text-align: center; }
+        .avatar { width: 90px; height: 90px; background: #0056b3; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: bold; margin: 0 auto 16px; overflow: hidden; border: 3px solid #e9ecef; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        h1 { font-size: 1.4rem; color: #1a1a1a; margin: 0 0 6px; }
+        .title { font-size: 1rem; color: #0056b3; font-weight: 600; margin: 0 0 4px; min-height: 1.2em; }
+        .org { font-size: 0.9rem; color: #666; margin: 0 0 20px; min-height: 1.1em; }
+        .lang-picker { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; background: #e9ecef; padding: 4px; border-radius: 8px; }
+        .lang-btn { flex: 1; border: none; background: transparent; padding: 8px; font-weight: bold; font-size: 0.85rem; border-radius: 6px; cursor: pointer; color: #495057; }
+        .lang-btn.active { background: white; color: #0056b3; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .info-group { text-align: left; background: #f8f9fa; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; }
+        .info-label { font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: bold; letter-spacing: 0.5px; }
+        .info-value { font-size: 0.95rem; color: #333; margin-top: 2px; text-decoration: none; display: block; word-break: break-all; white-space: pre-line; }
+        .btn-vcard { display: block; width: 100%; background: #28a745; color: white; text-decoration: none; padding: 14px; border-radius: 8px; font-weight: bold; margin-top: 20px; box-sizing: border-box; border: none; font-size: 1rem; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <div class="form">
-        <h2>1. Servidor de Destí</h2>
-        <label>URL base de GitHub Pages</label>
-        <input type="text" id="baseUrl" value="https://ffernandezvargas.github.io/prueba-tarjetas-hub/">
+<div class="card">
+    <div class="avatar" id="avatarContainer">
+        <span id="avatarText">--</span>
+    </div>
+    <h1 id="name">Carregant...</h1>
+    <div class="title" id="jobTitle"></div>
+    <div class="org" id="orgName"></div>
 
-        <h2>2. Dades Personals i Fotografia</h2>
-        <label>Nom i Cognoms</label>
-        <input type="text" id="nombre" value="Francisco J. Fernández">
-        
-        <div style="display:flex; gap:10px;">
-            <div style="flex:1;">
-                <label>Telèfon</label>
-                <input type="text" id="telefono" value="+34 934 974 000">
-            </div>
-            <div style="flex:1;">
-                <label>Correu electrònic</label>
-                <input type="email" id="email" value="fjfernandez@bellvitgehospital.cat">
-            </div>
-        </div>
-
-        <label>URL de la Fotografia / Avatar (opcional)</label>
-        <input type="text" id="imgUrl" placeholder="Ex. https://domini.cat/fotos/retrat.jpg">
-        <span class="hint">Si es deixa en blanc, es generaran les inicials del nom.</span>
-
-        <h2>3. Càrrec i Organització (Trilingüe)</h2>
-        <label>Càrrec en Català</label>
-        <input type="text" id="cargo_ca" placeholder="Ex. Tècnic de Disseny">
-        <label>Organització en Català</label>
-        <input type="text" id="org_ca" value="Hospital Universitari de Bellvitge">
-        
-        <button class="translate" onclick="traducirTodo()">Auto-traduir textos a ES i EN</button>
-        
-        <label style="margin-top:10px;">Traducció de Càrrec (ES / EN)</label>
-        <div class="grid-3">
-            <input type="text" id="cargo_es" placeholder="Càrrec ES">
-            <input type="text" id="cargo_en" placeholder="Càrrec EN">
-        </div>
-
-        <label style="margin-top:10px;">Traducció d'Organització (ES / EN)</label>
-        <div class="grid-3">
-            <input type="text" id="org_es" value="Hospital Universitario de Bellvitge">
-            <input type="text" id="org_en" value="Bellvitge University Hospital">
-        </div>
-
-        <h2>4. Observacions / Horaris (Trilingüe)</h2>
-        <label>Text lliure en Català (horaris, ubicació, telèfon alternatiu...)</label>
-        <textarea id="obs_ca" placeholder="Ex. Horari d'atenció: Dilluns a Divendres de 8h a 15h."></textarea>
-        
-        <label>Traducció d'Observacions (ES / EN)</label>
-        <div class="grid-3">
-            <input type="text" id="obs_es" placeholder="Observacions ES">
-            <input type="text" id="obs_en" placeholder="Notes EN">
-        </div>
-
-        <button onclick="generarQR()">Generar Codi QR</button>
+    <div class="lang-picker">
+        <button class="lang-btn active" id="btn-ca" onclick="setLang('ca')">CAT</button>
+        <button class="lang-btn" id="btn-es" onclick="setLang('es')">ES</button>
+        <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
     </div>
 
-    <div class="qr-preview">
-        <h3>Vista Prèvia del QR</h3>
-        <div id="qrcode"></div>
-        <button id="btnDownload" style="display:none; background:#2ecc71;" onclick="descargarQR()">Descarregar Imatge QR</button>
+    <div class="info-group">
+        <div class="info-label" id="lblTel">Telèfon</div>
+        <a href="" id="linkTel" class="info-value"></a>
     </div>
+    <div class="info-group">
+        <div class="info-label" id="lblEmail">Correu electrònic</div>
+        <a href="" id="linkEmail" class="info-value"></a>
+    </div>
+    <div class="info-group" id="groupObs" style="display:none;">
+        <div class="info-label" id="lblObs">Observacions</div>
+        <div id="valObs" class="info-value"></div>
+    </div>
+
+    <button class="btn-vcard" onclick="downloadVCard()" id="btnSave">Desar contacte</button>
 </div>
 
 <script>
-    async function traducirTexto(texto, targetLang) {
-        if (!texto || texto.trim() === '') return '';
-        try {
-            const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(texto)}&langpair=ca|${targetLang}`);
-            const json = await res.json();
-            return json.responseData.translatedText || texto;
-        } catch (e) {
-            return texto;
-        }
-    }
+    const params = new URLSearchParams(window.location.search);
+    const data = {
+        n: params.get('n') || 'Nom Cognoms',
+        t: params.get('t') || '',
+        e: params.get('e') || '',
+        img: params.get('img') || '',
+        c_ca: params.get('c_ca') || '', c_es: params.get('c_es') || '', c_en: params.get('c_en') || '',
+        o_ca: params.get('o_ca') || '', o_es: params.get('o_es') || '', o_en: params.get('o_en') || '',
+        obs_ca: params.get('obs_ca') || '', obs_es: params.get('obs_es') || '', obs_en: params.get('obs_en') || ''
+    };
 
-    async function traducirTodo() {
-        const cargoCat = document.getElementById('cargo_ca').value;
-        const obsCat = document.getElementById('obs_ca').value;
+    let currentLang = 'ca';
 
-        if (!cargoCat && !obsCat) {
-            alert('Introdueix primer el càrrec o les observacions en català.');
-            return;
-        }
+    const uiTexts = {
+        ca: { tel: 'Telèfon', email: 'Correu electrònic', obs: 'Observacions', save: 'Desar contacte' },
+        es: { tel: 'Teléfono', email: 'Correo electrónico', obs: 'Observaciones', save: 'Guardar contacto' },
+        en: { tel: 'Phone', email: 'Email', obs: 'Notes / Info', save: 'Save Contact' }
+    };
+
+    function init() {
+        document.getElementById('name').textContent = data.n;
         
-        if (cargoCat) {
-            document.getElementById('cargo_es').value = "Traduint...";
-            document.getElementById('cargo_en').value = "Traduint...";
-            document.getElementById('cargo_es').value = await traducirTexto(cargoCat, 'es');
-            document.getElementById('cargo_en').value = await traducirTexto(cargoCat, 'en');
+        const container = document.getElementById('avatarContainer');
+        if (data.img && data.img.trim() !== '') {
+            container.innerHTML = `<img src="${data.img}" alt="${data.n}">`;
+        } else {
+            const initials = data.n.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
+            container.innerHTML = `<span id="avatarText">${initials || 'HUB'}</span>`;
         }
 
-        if (obsCat) {
-            document.getElementById('obs_es').value = "Traduint...";
-            document.getElementById('obs_en').value = "Traduint...";
-            document.getElementById('obs_es').value = await traducirTexto(obsCat, 'es');
-            document.getElementById('obs_en').value = await traducirTexto(obsCat, 'en');
-        }
+        document.getElementById('linkTel').textContent = data.t;
+        document.getElementById('linkTel').href = 'tel:' + data.t;
+        document.getElementById('linkEmail').textContent = data.e;
+        document.getElementById('linkEmail').href = 'mailto:' + data.e;
+
+        setLang('ca');
     }
 
-    function generarQR() {
-        const base = document.getElementById('baseUrl').value.trim();
-        const n = document.getElementById('nombre').value;
-        const t = document.getElementById('telefono').value;
-        const e = document.getElementById('email').value;
-        const img = document.getElementById('imgUrl').value.trim();
-
-        const c_ca = document.getElementById('cargo_ca').value;
-        const c_es = document.getElementById('cargo_es').value;
-        const c_en = document.getElementById('cargo_en').value;
-
-        const o_ca = document.getElementById('org_ca').value;
-        const o_es = document.getElementById('org_es').value;
-        const o_en = document.getElementById('org_en').value;
-
-        const obs_ca = document.getElementById('obs_ca').value;
-        const obs_es = document.getElementById('obs_es').value;
-        const obs_en = document.getElementById('obs_en').value;
-
-        const finalUrl = `${base}?n=${encodeURIComponent(n)}&t=${encodeURIComponent(t)}&e=${encodeURIComponent(e)}&img=${encodeURIComponent(img)}&c_ca=${encodeURIComponent(c_ca)}&c_es=${encodeURIComponent(c_es)}&c_en=${encodeURIComponent(c_en)}&o_ca=${encodeURIComponent(o_ca)}&o_es=${encodeURIComponent(o_es)}&o_en=${encodeURIComponent(o_en)}&obs_ca=${encodeURIComponent(obs_ca)}&obs_es=${encodeURIComponent(obs_es)}&obs_en=${encodeURIComponent(obs_en)}`;
-
-        const qrContainer = document.getElementById('qrcode');
-        qrContainer.innerHTML = '';
-
-        new QRCode(qrContainer, {
-            text: finalUrl,
-            width: 350,
-            height: 350,
-            correctLevel : QRCode.CorrectLevel.L
+    function setLang(lang) {
+        currentLang = lang;
+        ['ca', 'es', 'en'].forEach(l => {
+            document.getElementById('btn-' + l).classList.toggle('active', l === lang);
         });
 
-        document.getElementById('btnDownload').style.display = 'block';
+        document.getElementById('jobTitle').textContent = data['c_' + lang] || data.c_ca;
+        document.getElementById('orgName').textContent = data['o_' + lang] || data.o_ca;
+        
+        const obsText = data['obs_' + lang] || data.obs_ca;
+        const groupObs = document.getElementById('groupObs');
+        if (obsText && obsText.trim() !== '') {
+            groupObs.style.display = 'block';
+            document.getElementById('valObs').textContent = obsText;
+        } else {
+            groupObs.style.display = 'none';
+        }
+
+        document.getElementById('lblTel').textContent = uiTexts[lang].tel;
+        document.getElementById('lblEmail').textContent = uiTexts[lang].email;
+        document.getElementById('lblObs').textContent = uiTexts[lang].obs;
+        document.getElementById('btnSave').textContent = uiTexts[lang].save;
     }
 
-    function descargarQR() {
-        const img = document.querySelector('#qrcode img') || document.querySelector('#qrcode canvas');
-        const enlace = document.createElement('a');
-        enlace.href = img.src || img.toDataURL("image/png");
-        enlace.download = `QR_${document.getElementById('nombre').value.replace(/\s+/g, '_')}.png`;
-        enlace.click();
+    function downloadVCard() {
+        const currentTitle = data['c_' + currentLang] || data.c_ca;
+        const currentOrg = data['o_' + currentLang] || data.o_ca;
+        const currentObs = data['obs_' + currentLang] || data.obs_ca;
+
+        let vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${data.n}\nORG:${currentOrg}\nTITLE:${currentTitle}\nTEL;TYPE=WORK,VOICE:${data.t}\nEMAIL;TYPE=WORK,INTERNET:${data.e}`;
+        if (currentObs) {
+            vcard += `\nNOTE:${currentObs.replace(/\n/g, ' ')}`;
+        }
+        vcard += `\nEND:VCARD`;
+
+        const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${data.n.replace(/\s+/g, '_')}_${currentLang}.vcf`;
+        a.click();
     }
+
+    init();
 </script>
 </body>
 </html>
