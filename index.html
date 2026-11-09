@@ -1,1 +1,123 @@
-Prueba de tarjeta virtual en curso...
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Generador Administrativo de Tarjetas QR</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #1a252f; color: #333; padding: 30px; display: flex; justify-content: center; }
+        .box { background: white; padding: 25px; border-radius: 10px; max-width: 800px; width: 100%; display: flex; gap: 30px; }
+        .form { flex: 1.2; }
+        .qr-preview { flex: 0.8; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        h2 { font-size: 1.1rem; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 6px; margin-top: 0; }
+        label { font-weight: bold; font-size: 0.8rem; display: block; margin-top: 10px; color: #555; }
+        input { width: 100%; padding: 8px; margin-top: 3px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        button { background: #3498db; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 15px; }
+        button:hover { background: #2980b9; }
+        button.translate { background: #f39c12; }
+        button.translate:hover { background: #d35400; }
+        #qrcode { margin: 15px 0; background: white; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <div class="form">
+        <h2>1. Servidor de Destino</h2>
+        <label>URL base de GitHub Pages</label>
+        <input type="text" id="baseUrl" value="https://ffernandezvargas.github.io/prueba-tarjetas-hub/">
+
+        <h2>2. Datos Básicos</h2>
+        <label>Nombre y Apellidos</label>
+        <input type="text" id="nombre" value="Francisco J. Fernández">
+        
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1;">
+                <label>Teléfono</label>
+                <input type="text" id="telefono" value="+34 934 974 000">
+            </div>
+            <div style="flex:1;">
+                <label>Email</label>
+                <input type="email" id="email" value="fjfernandez@bellvitgehospital.cat">
+            </div>
+        </div>
+
+        <h2>3. Cargo (CAT / ES / EN)</h2>
+        <input type="text" id="cargo_ca" placeholder="Cargo en catalán (Ej. Tècnic de Disseny)">
+        <button class="translate" onclick="traducirCampos()">Auto-traducir a ES y EN</button>
+        <div class="grid-3" style="margin-top:5px;">
+            <input type="text" id="cargo_es" placeholder="Castellano">
+            <input type="text" id="cargo_en" placeholder="Inglés">
+        </div>
+
+        <h2>4. Organización</h2>
+        <input type="text" id="org_ca" value="Hospital Universitari de Bellvitge">
+
+        <button onclick="generarQR()">Generar Código QR</button>
+    </div>
+
+    <div class="qr-preview">
+        <h3>Vista Previa del QR</h3>
+        <div id="qrcode"></div>
+        <button id="btnDownload" style="display:none; background:#2ecc71;" onclick="descargarQR()">Descargar Imagen QR</button>
+    </div>
+</div>
+
+<script>
+    async function traducirTexto(texto, targetLang) {
+        if (!texto) return '';
+        try {
+            const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(texto)}&langpair=ca|${targetLang}`);
+            const json = await res.json();
+            return json.responseData.translatedText || texto;
+        } catch (e) {
+            return texto;
+        }
+    }
+
+    async function traducirCampos() {
+        const cargoCat = document.getElementById('cargo_ca').value;
+        if (!cargoCat) return alert('Introduce primero el cargo en catalán.');
+        
+        document.getElementById('cargo_es').value = "Traduciendo...";
+        document.getElementById('cargo_en').value = "Traduciendo...";
+
+        document.getElementById('cargo_es').value = await traducirTexto(cargoCat, 'es');
+        document.getElementById('cargo_en').value = await traducirTexto(cargoCat, 'en');
+    }
+
+    function generarQR() {
+        const base = document.getElementById('baseUrl').value.trim();
+        const n = document.getElementById('nombre').value;
+        const t = document.getElementById('telefono').value;
+        const e = document.getElementById('email').value;
+        const c_ca = document.getElementById('cargo_ca').value;
+        const c_es = document.getElementById('cargo_es').value;
+        const c_en = document.getElementById('cargo_en').value;
+        const o_ca = document.getElementById('org_ca').value;
+
+        const finalUrl = `${base}?n=${encodeURIComponent(n)}&t=${encodeURIComponent(t)}&e=${encodeURIComponent(e)}&c_ca=${encodeURIComponent(c_ca)}&c_es=${encodeURIComponent(c_es)}&c_en=${encodeURIComponent(c_en)}&o_ca=${encodeURIComponent(o_ca)}`;
+
+        const qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = '';
+
+        new QRCode(qrContainer, {
+            text: finalUrl,
+            width: 180,
+            height: 180
+        });
+
+        document.getElementById('btnDownload').style.display = 'block';
+    }
+
+    function descargarQR() {
+        const img = document.querySelector('#qrcode img') || document.querySelector('#qrcode canvas');
+        const enlace = document.createElement('a');
+        enlace.href = img.src || img.toDataURL("image/png");
+        enlace.download = `QR_${document.getElementById('nombre').value.replace(/\s+/g, '_')}.png`;
+        enlace.click();
+    }
+</script>
+</body>
+</html>
