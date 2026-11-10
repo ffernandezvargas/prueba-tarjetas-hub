@@ -19,7 +19,6 @@
             position: relative;
         }
 
-        /* Capa d'animació inicial (Splash) */
         #splashIntro {
             position: fixed;
             top: 0;
@@ -47,7 +46,6 @@
         .splash-logo-hub { height: 42px; width: auto; }
         .splash-logo-gene { height: 28px; width: auto; }
 
-        /* Targeta principal amb fons bicolor (tall a la meitat de l'avatar) */
         .card { 
             background: linear-gradient(to bottom, #ecc5c4 110px, #ffffff 110px);
             max-width: 400px; 
@@ -106,20 +104,10 @@
         
         .btn-vcard { display: block; width: 100%; background: #28a745; color: white; text-decoration: none; padding: 14px; border-radius: 8px; font-weight: bold; margin-top: 20px; box-sizing: border-box; border: none; font-size: 1rem; cursor: pointer; }
 
-        /* Keyframes */
         @keyframes zoomIntro {
-            0% {
-                opacity: 0;
-                transform: scale(0.7);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.15);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1.15);
-            }
+            0% { opacity: 0; transform: scale(0.7); }
+            50% { opacity: 1; transform: scale(1.15); }
+            100% { opacity: 1; transform: scale(1.15); }
         }
 
         @keyframes fadeOutSplash {
@@ -128,22 +116,13 @@
         }
 
         @keyframes slideUpCard {
-            0% {
-                opacity: 0;
-                transform: translateY(60px);
-                clip-path: inset(0 0 100% 0);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-                clip-path: inset(0 0 0 0);
-            }
+            0% { opacity: 0; transform: translateY(60px); clip-path: inset(0 0 100% 0); }
+            100% { opacity: 1; transform: translateY(0); clip-path: inset(0 0 0 0); }
         }
     </style>
 </head>
 <body>
 
-<!-- Pantalla inicial d'animació centrada -->
 <div id="splashIntro">
     <div class="splash-box">
         <img src="HUB_color.svg" alt="HUB" class="splash-logo-hub">
@@ -188,14 +167,26 @@
 
 <script>
     const params = new URLSearchParams(window.location.search);
+    
+    // Paràmetres curts optimitzats
     const data = {
         n: params.get('n') || 'Nom Cognoms',
         t: params.get('t') || '',
         e: params.get('e') || '',
-        img: params.get('img') || '',
-        c_ca: params.get('c_ca') || '', c_es: params.get('c_es') || '', c_en: params.get('c_en') || '',
-        o_ca: params.get('o_ca') || '', o_es: params.get('o_es') || '', o_en: params.get('o_en') || '',
-        obs_ca: params.get('obs_ca') || '', obs_es: params.get('obs_es') || '', obs_en: params.get('obs_en') || ''
+        i: params.get('i') || params.get('img') || '',
+        c_ca: params.get('c1') || params.get('c_ca') || '',
+        c_es: params.get('c2') || params.get('c_es') || '',
+        c_en: params.get('c3') || params.get('c_en') || '',
+        obs_ca: params.get('o1') || params.get('obs_ca') || '',
+        obs_es: params.get('o2') || params.get('obs_es') || '',
+        obs_en: params.get('o3') || params.get('obs_en') || ''
+    };
+
+    // Textos institucionals fixos en codi per alliberar espai del QR
+    const orgTitles = {
+        ca: 'Hospital Universitari de Bellvitge',
+        es: 'Hospital Universitario de Bellvitge',
+        en: 'Bellvitge University Hospital'
     };
 
     let currentLang = 'ca';
@@ -217,8 +208,8 @@
         document.getElementById('name').textContent = data.n;
         
         const container = document.getElementById('avatarContainer');
-        if (data.img && data.img.trim() !== '' && data.img !== 'null' && data.img !== 'undefined') {
-            container.innerHTML = `<img src="${data.img}" alt="${data.n}">`;
+        if (data.i && data.i.trim() !== '' && data.i !== 'null' && data.i !== 'undefined') {
+            container.innerHTML = `<img src="${data.i}" alt="${data.n}">`;
         } else {
             container.innerHTML = `<span id="avatarText">${calcularIniciales(data.n)}</span>`;
         }
@@ -238,7 +229,7 @@
         });
 
         document.getElementById('jobTitle').textContent = data['c_' + lang] || data.c_ca;
-        document.getElementById('orgName').textContent = data['o_' + lang] || data.o_ca;
+        document.getElementById('orgName').textContent = orgTitles[lang];
         
         const obsText = data['obs_' + lang] || data.obs_ca;
         const groupObs = document.getElementById('groupObs');
@@ -257,7 +248,7 @@
 
     function downloadVCard() {
         const currentTitle = data['c_' + currentLang] || data.c_ca;
-        const currentOrg = data['o_' + currentLang] || data.o_ca;
+        const currentOrg = orgTitles[currentLang];
         const currentObs = data['obs_' + currentLang] || data.obs_ca;
 
         let vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${data.n}\nORG:${currentOrg}\nTITLE:${currentTitle}\nTEL;TYPE=WORK,VOICE:${data.t}\nEMAIL;TYPE=WORK,INTERNET:${data.e}`;
