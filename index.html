@@ -7,7 +7,7 @@
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: #f0f2f5; 
+            background: #ecc5c4; 
             margin: 0; 
             padding: 20px; 
             display: flex; 
@@ -16,37 +16,62 @@
             min-height: 100vh;
             box-sizing: border-box;
             overflow-x: hidden;
+            position: relative;
         }
 
+        /* Capa d'animació inicial (Splash) */
+        #splashIntro {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #ecc5c4;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            pointer-events: none;
+            animation: fadeOutSplash 0.5s ease 1.1s forwards;
+        }
+
+        .splash-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 22px;
+            animation: zoomIntro 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        .splash-logo-hub { height: 42px; width: auto; }
+        .splash-logo-gene { height: 28px; width: auto; }
+
+        /* Targeta principal amb fons bicolor (tall a la meitat de l'avatar) */
         .card { 
-            background: white; 
+            background: linear-gradient(to bottom, #ecc5c4 110px, #ffffff 110px);
             max-width: 400px; 
             width: 100%; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+            border-radius: 20px; 
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12); 
             padding: 24px; 
             box-sizing: border-box; 
             text-align: center; 
             position: relative;
+            overflow: hidden;
+            animation: slideUpCard 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.8s backwards;
         }
         
-        /* Capçalera i animació de zoom-in + trasllat a posició final */
         .header-logos { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             margin-bottom: 24px; 
             padding: 0 4px;
-            animation: introLogos 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
 
         .logo-hub { height: 36px; width: auto; }
         .logo-gene { height: 24px; width: auto; transform: translateY(-1px); }
-
-        /* Efecte persiana des de baix per a la resta de contingut */
-        .card-body {
-            animation: slideUpBlind 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.6s backwards;
-        }
 
         .avatar { 
             width: 90px; 
@@ -61,7 +86,9 @@
             font-weight: bold; 
             margin: 0 auto 16px; 
             overflow: hidden; 
-            border: 3px solid #e9ecef; 
+            border: 4px solid #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
         }
         .avatar img { width: 100%; height: 100%; object-fit: cover; }
         
@@ -69,7 +96,7 @@
         .title { font-size: 1.1rem; color: #0056b3; font-weight: 600; margin: 0 0 4px; min-height: 1.2em; }
         .org { font-size: 1.1rem; font-weight: bold; color: #333; margin: 0 0 20px; min-height: 1.1em; }
         
-        .lang-picker { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; background: #e9ecef; padding: 4px; border-radius: 8px; }
+        .lang-picker { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; background: #f0f2f5; padding: 4px; border-radius: 8px; }
         .lang-btn { flex: 1; border: none; background: transparent; padding: 8px; font-weight: bold; font-size: 0.85rem; border-radius: 6px; cursor: pointer; color: #495057; }
         .lang-btn.active { background: white; color: #0056b3; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
@@ -79,26 +106,31 @@
         
         .btn-vcard { display: block; width: 100%; background: #28a745; color: white; text-decoration: none; padding: 14px; border-radius: 8px; font-weight: bold; margin-top: 20px; box-sizing: border-box; border: none; font-size: 1rem; cursor: pointer; }
 
-        /* Definicions de fotogrames clau (Keyframes) */
-        @keyframes introLogos {
+        /* Keyframes */
+        @keyframes zoomIntro {
             0% {
                 opacity: 0;
-                transform: translateY(180px) scale(1.4);
+                transform: scale(0.7);
             }
-            45% {
+            50% {
                 opacity: 1;
-                transform: translateY(180px) scale(1.4);
+                transform: scale(1.15);
             }
             100% {
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                transform: scale(1.15);
             }
         }
 
-        @keyframes slideUpBlind {
+        @keyframes fadeOutSplash {
+            0% { opacity: 1; visibility: visible; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        @keyframes slideUpCard {
             0% {
                 opacity: 0;
-                transform: translateY(50px);
+                transform: translateY(60px);
                 clip-path: inset(0 0 100% 0);
             }
             100% {
@@ -111,43 +143,47 @@
 </head>
 <body>
 
+<!-- Pantalla inicial d'animació centrada -->
+<div id="splashIntro">
+    <div class="splash-box">
+        <img src="HUB_color.svg" alt="HUB" class="splash-logo-hub">
+        <img src="Gene_color.svg" alt="Generalitat de Catalunya" class="splash-logo-gene">
+    </div>
+</div>
+
 <div class="card">
-    <!-- Logotips que fan el zoom d'entrada i es col·loquen a dalt -->
     <div class="header-logos">
         <img src="HUB_color.svg" alt="Hospital Universitari de Bellvitge" class="logo-hub">
         <img src="Gene_color.svg" alt="Generalitat de Catalunya" class="logo-gene">
     </div>
 
-    <!-- Contingut que emergeix en efecte persiana des de baix -->
-    <div class="card-body">
-        <div class="avatar" id="avatarContainer">
-            <span id="avatarText">--</span>
-        </div>
-        <h1 id="name">Carregant...</h1>
-        <div class="title" id="jobTitle"></div>
-        <div class="org" id="orgName"></div>
-
-        <div class="lang-picker">
-            <button class="lang-btn active" id="btn-ca" onclick="setLang('ca')">CAT</button>
-            <button class="lang-btn" id="btn-es" onclick="setLang('es')">ES</button>
-            <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
-        </div>
-
-        <div class="info-group">
-            <div class="info-label" id="lblTel">Telèfon</div>
-            <a href="" id="linkTel" class="info-value"></a>
-        </div>
-        <div class="info-group">
-            <div class="info-label" id="lblEmail">Correu electrònic</div>
-            <a href="" id="linkEmail" class="info-value"></a>
-        </div>
-        <div class="info-group" id="groupObs" style="display:none;">
-            <div class="info-label" id="lblObs">Observacions</div>
-            <div id="valObs" class="info-value"></div>
-        </div>
-
-        <button class="btn-vcard" onclick="downloadVCard()" id="btnSave">Desar contacte</button>
+    <div class="avatar" id="avatarContainer">
+        <span id="avatarText">--</span>
     </div>
+    <h1 id="name">Carregant...</h1>
+    <div class="title" id="jobTitle"></div>
+    <div class="org" id="orgName"></div>
+
+    <div class="lang-picker">
+        <button class="lang-btn active" id="btn-ca" onclick="setLang('ca')">CAT</button>
+        <button class="lang-btn" id="btn-es" onclick="setLang('es')">ES</button>
+        <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
+
+    <div class="info-group">
+        <div class="info-label" id="lblTel">Telèfon</div>
+        <a href="" id="linkTel" class="info-value"></a>
+    </div>
+    <div class="info-group">
+        <div class="info-label" id="lblEmail">Correu electrònic</div>
+        <a href="" id="linkEmail" class="info-value"></a>
+    </div>
+    <div class="info-group" id="groupObs" style="display:none;">
+        <div class="info-label" id="lblObs">Observacions</div>
+        <div id="valObs" class="info-value"></div>
+    </div>
+
+    <button class="btn-vcard" onclick="downloadVCard()" id="btnSave">Desar contacte</button>
 </div>
 
 <script>
